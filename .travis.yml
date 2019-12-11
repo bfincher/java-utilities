@@ -1,0 +1,16 @@
+language: java
+dist: xenial
+jdk:
+        - oraclejdk11
+
+env:
+        NEXUS_URL="https://repo.maven.apache.org/maven2"
+
+addons:
+  sonarcloud:
+    organization: "bfincher"
+    token:
+      secure: "c88650da45d9d4233760b1ff26839bfe46c9256b" # encrypted value of your token
+
+script:
+  - ./gradlew sonarqube

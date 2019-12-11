@@ -38,7 +38,7 @@ public class SocketOptions {
         this.sendBufferSize = OptionalInt.of(sendBufferSize);
     }
     
-    /** Clears the SO_SNDBUF socket setting */
+    /** Clears the SO_SNDBUF socket setting. */
     public void clearSendBufferSize() {
         sendBufferSize = OptionalInt.empty();
     }
@@ -61,7 +61,7 @@ public class SocketOptions {
         this.receiveBufferSize = OptionalInt.of(receiveBufferSize);
     }
     
-    /** Clears the SO_RCVBUF socket setting */
+    /** Clears the SO_RCVBUF socket setting. */
     public void clearReceiveBufferSize() {
         receiveBufferSize = OptionalInt.empty();
     }
@@ -98,7 +98,7 @@ public class SocketOptions {
         this.timeout = OptionalInt.of(timeout);
     }
     
-    /** Clears the SO_TIMEOUT socket setting */
+    /** Clears the SO_TIMEOUT socket setting. */
     public void clearTimeout() {
         timeout = OptionalInt.empty();
     }

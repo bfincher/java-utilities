@@ -19,7 +19,6 @@ group = 'com.fincher'
 description = 'Input / Output channels'
 
 allprojects {
-    println("Hello nexus url = ${nexusUrl}")
     apply plugin: 'java'
     apply plugin: 'maven-publish'
     apply plugin: 'checkstyle'
@@ -76,5 +75,11 @@ allprojects {
 
     checkstyle {
         configFile file("config/checkstyle/checkstyle.xml")
+    }
+    
+    sonarqube {
+        properties {
+            property "sonar.projectKey", "bfincher_java-utilities"
+        }
     }
 }
