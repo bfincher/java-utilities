@@ -169,7 +169,7 @@ public class UdpTest extends IoChannelTesterBase<MessageBuffer> {
             channel.send(null);
             fail("Should have got exception");
         } catch (IllegalStateException e) {
-            assertEquals("id Cannot send on an input only channel   ", e.getMessage());
+            assertEquals("id Cannot send on an input only channel", e.getMessage());
         }
         try {
             channel.setSocketOptions(new UdpSocketOptions());
