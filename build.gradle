@@ -76,4 +76,10 @@ allprojects {
     checkstyle {
         configFile file("config/checkstyle/checkstyle.xml")
     }
+    
+    sonarqube {
+        properties {
+            property "sonar.projectKey", "bfincher_java-utilities"
+        }
+    }
 }
