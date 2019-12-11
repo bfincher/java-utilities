@@ -1,0 +1,13 @@
+description = 'Input / Output channels'
+
+def globalConf = rootProject.ext
+
+dependencies {
+    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+    implementation "com.google.guava:guava:${guavaVersion}"
+    implementation project(':thread')
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+}

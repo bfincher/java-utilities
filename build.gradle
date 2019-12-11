@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+    id "org.sonarqube" version "2.8"
+    id "net.researchgate.release" version "2.6.0"
+}
+
+ext {
+    log4jVersion='2.12.1'
+    guavaVersion='28.1-jre'
+    junitVersion='4.10'
+    awaitilityVersion='4.0.1'
+	mockitoVersion='2.1.0'
+}
+
+def localNexusUrl = "http://192.168.1.2:8082/nexus/content/"
+def nexusUrl = System.getenv("NEXUS_URL") ?: "${localNexusUrl}/groups/public"
+
+group = 'com.fincher'
+description = 'Input / Output channels'
+
+allprojects {
+    println("Hello nexus url = ${nexusUrl}")
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'checkstyle'
+    apply plugin: "org.sonarqube" 
+    apply plugin: 'jacoco'
+
+    repositories {
+        mavenLocal()
+        maven {
+            url "${nexusUrl}"
+        }
+    }
+
+    sourceCompatibility = 1.11
+    targetCompatibility = 1.11
+
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allJava
+        archiveClassifier.set("sources")
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+	        from components.java
+	        artifact tasks.sourcesJar
+	    }
+        }
+
+        repositories {
+            maven {
+	        credentials {
+	            username = "upload"
+		    password = "upload"
+                }
+		
+	        if (project.version.endsWith('-SNAPSHOT')) {
+	            url "${localNexusUrl}repositories/snapshots"
+	        } else {
+	            url "${localNexusUrl}repositories/releases"
+	        }
+                authentication {
+                    basic(BasicAuthentication)
+                }
+            }
+        }
+    }
+
+    release {
+        git {
+            requireBranch = ''
+        }
+    }
+
+    checkstyle {
+        configFile file("config/checkstyle/checkstyle.xml")
+    }
+}
