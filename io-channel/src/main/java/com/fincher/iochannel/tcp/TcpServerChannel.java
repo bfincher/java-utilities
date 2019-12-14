@@ -32,6 +32,11 @@ public class TcpServerChannel extends TcpChannel {
             StreamIo streamIo, InetSocketAddress localAddress) {
         super(id, ioType, localAddress, streamIo);
     }
+    
+    
+    protected TcpServerChannel(TcpServerChannelBuilder builder) {
+        super(builder);
+    }
 
     
     /**
@@ -65,6 +70,10 @@ public class TcpServerChannel extends TcpChannel {
         TcpServerChannel channel = new TcpServerChannel(id, IoType.INPUT_AND_OUTPUT, streamIo, localAddress);
         channel.addMessageListener(messageHandler);
         return channel;
+    }
+    
+    public static TcpServerChannel createChannel(TcpServerChannelBuilder builder) {
+        return new TcpServerChannel(builder);
     }
 
     /**

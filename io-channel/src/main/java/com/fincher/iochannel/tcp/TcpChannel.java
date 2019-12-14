@@ -71,6 +71,18 @@ public abstract class TcpChannel extends SocketIoChannel {
         super(id, ioType, localAddress);
         this.streamIo = streamIo;
     }
+    
+    
+    protected TcpChannel(TcpChannelBuilder<?, ?> builder) {
+        super(builder);
+        Preconditions.checkArgument(builder.getStreamIo().isPresent());
+        streamIo = builder.getStreamIo().get();
+        
+        if (builder.getSocketOptions().isPresent()) {
+            Preconditions.checkArgument(builder.getSocketOptions().get() instanceof TcpSocketOptions);
+            setSocketOptions((TcpSocketOptions)builder.getSocketOptions().get());
+        }
+    }
 
 
     protected void setReceiveRunnableFactory(ReceiveRunnableFactory factory) {

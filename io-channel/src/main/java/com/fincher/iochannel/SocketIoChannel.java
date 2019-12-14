@@ -32,6 +32,11 @@ public abstract class SocketIoChannel extends IoChannel<MessageBuffer> {
             this.localAddress = localAddress;
         }
     }
+    
+    protected SocketIoChannel(SocketIoChannelBuilder<?, ?> builder) {
+        super(builder);
+        localAddress = builder.getLocalAddress().orElse(new InetSocketAddress(0));
+    }
 
     /**
      * Get the local address to which this socket is bound or the address to which it will be bound

@@ -26,12 +26,16 @@ import org.apache.logging.log4j.Logger;
  * @author Brian Fincher
  * 
  */
-public class UdpChannel extends SocketIoChannel {
+public class UdpChannel
+        extends
+        SocketIoChannel {
 
     private static final Logger LOG = LogManager.getLogger();
 
     /** Used by a thread to receive messages. */
-    private class ReceiveRunnable implements MyRunnableIfc {
+    private class ReceiveRunnable
+            implements
+            MyRunnableIfc {
 
         /** The byte array used to store received messages. */
         private final byte[] buf;
@@ -101,12 +105,11 @@ public class UdpChannel extends SocketIoChannel {
      * 
      * @param id            The ID of this IO Thread
      * @param ioType        The input/output status of this channel
-     * @param localAddress  The local address to which this socket will be bound. If null
-     *                      "localhost" will be used
+     * @param localAddress  The local address to which this socket will be bound. If null "localhost"
+     *                      will be used
      * @param remoteAddress The remote address to which messages will be sent
      */
-    protected UdpChannel(String id, IoType ioType, InetSocketAddress localAddress,
-            InetSocketAddress remoteAddress) {
+    protected UdpChannel(String id, IoType ioType, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
 
         super(id, ioType, localAddress);
         this.remoteAddress = remoteAddress;
@@ -118,8 +121,8 @@ public class UdpChannel extends SocketIoChannel {
      * 
      * @param id             The ID of this IO Thread
      * @param messageHandler Used to notify clients of received data
-     * @param localAddress   The local address to which this socket will be bound. If null
-     *                       "localhost" will be used
+     * @param localAddress   The local address to which this socket will be bound. If null "localhost"
+     *                       will be used
      * @return a new input only UDP IO Thread
      */
     public static UdpChannel createInputChannel(String id, Consumer<MessageBuffer> messageHandler,
@@ -145,13 +148,30 @@ public class UdpChannel extends SocketIoChannel {
      * Constructs a new output only UDP IO Thread.
      * 
      * @param id            The ID of this IO Thread
-     * @param localAddress  The local address to which this socket will be bound. If null
-     *                      "localhost" will be used
+     * @param localAddress  The local address to which this socket will be bound. If null "localhost"
+     *                      will be used
      * @param remoteAddress The remote address to which messages will be sent
      */
     public static UdpChannel createOutputChannel(String id, InetSocketAddress localAddress,
             InetSocketAddress remoteAddress) {
         return new UdpChannel(id, IoType.OUTPUT_ONLY, localAddress, remoteAddress);
+    }
+
+    protected static UdpChannel create(UdpChannelBuilder builder) {
+        UdpChannel channel;
+        if (builder.getIoType().isInput()) {
+            channel = createInputChannel(builder.getId(), builder.getLocalAddress()
+                    .orElseThrow(() -> new IllegalStateException("Local Address must be set")));
+        } else {
+
+            channel = createOutputChannel(builder.getId(),
+                    builder.getLocalAddress().orElseThrow(() -> new IllegalStateException("Local Address must be set")),
+                    builder.getRemoteAddress()
+                            .orElseThrow(() -> new IllegalStateException("Remote Address must be set")));
+        }
+
+        builder.getSocketOptions().ifPresent(options -> channel.setSocketOptions(options));
+        return channel;
     }
 
     /**
@@ -197,8 +217,7 @@ public class UdpChannel extends SocketIoChannel {
         }
         setState(ChannelState.CONNECTED);
 
-        LOG.info(getId() + " Connected to local address " + socket.getLocalAddress() + " "
-                + socket.getLocalPort());
+        LOG.info(getId() + " Connected to local address " + socket.getLocalAddress() + " " + socket.getLocalPort());
 
         if (remoteAddress == null) {
             LOG.info("{} Remote address = null", getId());
@@ -242,12 +261,10 @@ public class UdpChannel extends SocketIoChannel {
     public void send(MessageBuffer message) throws ChannelException {
         Preconditions.checkState(getState() == ChannelState.CONNECTED,
                 "%s Cannot send on a channel that is not connected", getId());
-        
-        Preconditions.checkState(getIoType().isOutput(),
-                "%s Cannot send on an input only channel", getId());
 
-        logSend(LOG, message, "remote address = " + remoteAddress.toString() + " size = "
-                + message.getBytes().length);
+        Preconditions.checkState(getIoType().isOutput(), "%s Cannot send on an input only channel", getId());
+
+        logSend(LOG, message, "remote address = " + remoteAddress.toString() + " size = " + message.getBytes().length);
         byte[] bytes = message.getBytes();
 
         try {

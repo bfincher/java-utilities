@@ -21,7 +21,9 @@ import org.apache.logging.log4j.Logger;
  * @author Brian Fincher
  *
  */
-public class UdpMulticastChannel extends UdpChannel {
+public class UdpMulticastChannel
+        extends
+        UdpChannel {
 
     private static final Logger LOG = LogManager.getLogger();
 
@@ -35,8 +37,7 @@ public class UdpMulticastChannel extends UdpChannel {
      * @param localAddress     The local address to which this socket will be bound.
      * @param multicastAddress The multicast address to which this socket will join
      */
-    private UdpMulticastChannel(String id, InetSocketAddress localAddress,
-            InetAddress multicastAddress) {
+    private UdpMulticastChannel(String id, InetSocketAddress localAddress, InetAddress multicastAddress) {
         super(id, IoType.INPUT_ONLY, localAddress);
 
         Preconditions.checkArgument(localAddress != null && localAddress.getPort() != 0,
@@ -50,8 +51,7 @@ public class UdpMulticastChannel extends UdpChannel {
         socketOptions = new UdpMulticastSocketOptions();
     }
 
-    private UdpMulticastChannel(String id, InetSocketAddress localAddress,
-            InetSocketAddress remoteAddress) {
+    private UdpMulticastChannel(String id, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         super(id, IoType.OUTPUT_ONLY, localAddress, remoteAddress);
         this.multicastAddress = remoteAddress.getAddress();
         Preconditions.checkNotNull(localAddress);
@@ -71,9 +71,8 @@ public class UdpMulticastChannel extends UdpChannel {
      * @param multicastAddress The multicast address to which this socket will join
      * @return a new input only UDP MULTICAST IO Channel
      */
-    public static UdpMulticastChannel createInputChannel(String id,
-            Consumer<MessageBuffer> messageHandler, InetSocketAddress localAddress,
-            InetAddress multicastAddress) {
+    public static UdpMulticastChannel createInputChannel(String id, Consumer<MessageBuffer> messageHandler,
+            InetSocketAddress localAddress, InetAddress multicastAddress) {
         UdpMulticastChannel channel = new UdpMulticastChannel(id, localAddress, multicastAddress);
         channel.addMessageListener(messageHandler);
         return channel;
@@ -105,6 +104,24 @@ public class UdpMulticastChannel extends UdpChannel {
         return new UdpMulticastChannel(id, localAddress, multicastAddress);
     }
 
+    protected static UdpMulticastChannel create(UdpMulticastChannelBuilder builder) {
+        UdpMulticastChannel channel;
+        if (builder.getIoType().isInput()) {
+            channel = createInputChannel(builder.getId(),
+                    builder.getLocalAddress().orElseThrow(() -> new IllegalStateException("Local address must be set")),
+                    builder.getMulticastAddress().orElseThrow(
+                        () -> new IllegalStateException("Multicast address must be set for input channels")));
+        } else {
+            channel = createOutputChannel(builder.getId(),
+                    builder.getLocalAddress().orElseThrow(() -> new IllegalStateException("Local address must be set")),
+                    builder.getRemoteAddress().orElseThrow(
+                        () -> new IllegalStateException("Remote address must be set for output channels")));
+        }
+
+        builder.getSocketOptions().ifPresent(options -> channel.setSocketOptions(options));
+        return channel;
+    }
+
     @Override
     public void connect() throws ChannelException, InterruptedException {
         super.connect();
@@ -114,8 +131,7 @@ public class UdpMulticastChannel extends UdpChannel {
             case INPUT_AND_OUTPUT:
                 try {
                     ((MulticastSocket) socket).joinGroup(multicastAddress);
-                    LOG.info(getId() + " joined multicast group "
-                            + multicastAddress.getHostAddress());
+                    LOG.info(getId() + " joined multicast group " + multicastAddress.getHostAddress());
                 } catch (IOException se) {
                     throw new ChannelException(getId(), se);
                 }
