@@ -1,7 +1,5 @@
 package com.fincher.iochannel.tcp;
 
-import com.google.common.base.Preconditions;
-
 import java.net.InetSocketAddress;
 import java.util.Optional;
 
@@ -20,8 +18,14 @@ public class TcpClientChannelBuilder extends TcpChannelBuilder<TcpClientChannel,
     
     @Override
     protected TcpClientChannel doBuild() {
-        Preconditions.checkState(remoteAddress.isPresent(), "Remote address must be set prior to building");
-        return new TcpClientChannel(this);
+        
+        TcpClientChannel channel = new TcpClientChannel(getId(),
+                getIoType(),
+                getStreamIo().orElseThrow(() -> new IllegalStateException("Stream IO must be set")),
+                getLocalAddress().orElse(new InetSocketAddress(0)),
+                getRemoteAddress().orElseThrow(() -> new IllegalStateException("remoteAddress must be set")));
+        
+        return channel;
     }
 
 }

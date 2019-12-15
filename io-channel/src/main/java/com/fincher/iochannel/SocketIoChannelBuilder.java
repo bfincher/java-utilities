@@ -3,10 +3,10 @@ package com.fincher.iochannel;
 import java.net.InetSocketAddress;
 import java.util.Optional;
 
-public abstract class SocketIoChannelBuilder<Channel extends SocketIoChannel,
-        B extends SocketIoChannelBuilder<Channel, B>>
+public abstract class SocketIoChannelBuilder<CHANNEL extends SocketIoChannel,
+        B extends SocketIoChannelBuilder<CHANNEL, B>>
         extends
-        IoChannelBuilder<MessageBuffer, Channel, B> {
+        IoChannelBuilder<MessageBuffer, CHANNEL, B> {
 
     protected Optional<InetSocketAddress> localAddress = Optional.empty();
 

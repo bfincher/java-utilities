@@ -7,33 +7,28 @@ import com.google.common.base.Preconditions;
 import java.net.InetSocketAddress;
 import java.util.Optional;
 
-public class UdpChannelBuilder
-        extends
-        SocketIoChannelBuilder<UdpChannel, UdpChannelBuilder> {
+public class UdpChannelBuilder extends SocketIoChannelBuilder<UdpChannel, UdpChannelBuilder> {
 
     private Optional<InetSocketAddress> remoteAddress = Optional.empty();
-    private Optional<UdpSocketOptions> socketOptions;
+    private Optional<UdpSocketOptions> socketOptions = Optional.empty();
 
     public Optional<InetSocketAddress> getRemoteAddress() {
         return remoteAddress;
     }
 
-    /** Sets the destination address for the channel.
+    /**
+     * Sets the destination address for the channel.
      * 
      * @param remoteAddress The destination address for this channel.
      * @return This builder
      */
     public UdpChannelBuilder sendingToRemoteAddress(InetSocketAddress remoteAddress) {
-        Preconditions.checkState(getIoType() == null || getIoType().isOutput(),
-                "Remote address cannot be set on an input only channel");
         this.remoteAddress = Optional.of(remoteAddress);
         return this;
     }
 
     @Override
     public UdpChannelBuilder withIoType(IoType ioType) {
-        Preconditions.checkState(remoteAddress.isEmpty() || ioType.isOutput(),
-                "Remote address cannot be set on an input only channel");
         Preconditions.checkArgument(ioType != IoType.INPUT_AND_OUTPUT,
                 "UDP Channels cannot have an IoType of INPUT_AND_OUTPUT");
         return super.withIoType(ioType);
@@ -50,9 +45,17 @@ public class UdpChannelBuilder
 
     @Override
     protected UdpChannel doBuild() {
-        Preconditions.checkState(getIoType().isInput() || remoteAddress.isPresent(),
-                "A remote address must be set for output channels");
-        return UdpChannel.create(this);
+        UdpChannel channel;
+        if (getIoType().isInput()) {
+            Preconditions.checkState(remoteAddress.isEmpty(), "Remote address cannot be set on input channels");
+            channel = new UdpChannel(getId(), getIoType(), getLocalAddress().orElse(new InetSocketAddress(0)));
+        } else {
+            channel = new UdpChannel(getId(), getIoType(), getLocalAddress().orElse(new InetSocketAddress(0)),
+                    getRemoteAddress().orElseThrow(() -> new IllegalStateException("Remote Address must be set")));
+        }
+
+        getSocketOptions().ifPresent(channel::setSocketOptions);
+        return channel;
     }
 
 }

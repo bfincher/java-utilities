@@ -6,9 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class TcpChannelBuilder<Channel extends TcpChannel, B extends TcpChannelBuilder<Channel, B>>
-        extends
-        SocketIoChannelBuilder<Channel, TcpChannelBuilder<Channel, B>> {
+public abstract class TcpChannelBuilder<CHANNEL extends TcpChannel, B extends TcpChannelBuilder<CHANNEL, B>>
+        extends SocketIoChannelBuilder<CHANNEL, B> {
 
     private Optional<TcpSocketOptions> socketOptions = Optional.empty();
     private Optional<StreamIo> streamIo = Optional.empty();
@@ -18,7 +17,7 @@ public abstract class TcpChannelBuilder<Channel extends TcpChannel, B extends Tc
         return socketOptions;
     }
 
-    public B setSocketOptions(TcpSocketOptions socketOptions) {
+    public B withSocketOptions(TcpSocketOptions socketOptions) {
         this.socketOptions = Optional.of(socketOptions);
         return self();
     }
@@ -27,7 +26,7 @@ public abstract class TcpChannelBuilder<Channel extends TcpChannel, B extends Tc
         return streamIo;
     }
 
-    public B setStreamIo(StreamIo streamIo) {
+    public B withStreamIo(StreamIo streamIo) {
         this.streamIo = Optional.of(streamIo);
         return self();
     }
@@ -42,11 +41,11 @@ public abstract class TcpChannelBuilder<Channel extends TcpChannel, B extends Tc
     }
 
     @Override
-    public Channel build() {
-        Channel channel = super.build();
+    public CHANNEL build() {
+        CHANNEL channel = super.build();
 
-        socketOptions.ifPresent(options -> channel.setSocketOptions(options));
-        connectionListeners.forEach(listener -> channel.addConnectionEstablishedListener(listener));
+        socketOptions.ifPresent(channel::setSocketOptions);
+        connectionListeners.forEach(channel::addConnectionEstablishedListener);
         return channel;
     }
 

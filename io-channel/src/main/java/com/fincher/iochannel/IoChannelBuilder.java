@@ -17,8 +17,8 @@ import java.util.function.Consumer;
  *
  * @param <T> The type of data exchanged with the IO Channel
  */
-public abstract class IoChannelBuilder<T extends Exchangeable, Channel extends IoChannelIfc<T>,
-        B extends IoChannelBuilder<T, Channel, B>> {
+public abstract class IoChannelBuilder<T extends Exchangeable, CHANNEL extends IoChannelIfc<T>,
+        B extends IoChannelBuilder<T, CHANNEL, B>> {
 
     private String id;
     private IoType ioType;
@@ -33,7 +33,7 @@ public abstract class IoChannelBuilder<T extends Exchangeable, Channel extends I
         return new TcpClientChannelBuilder();
     }
 
-    public UdpChannelBuilder createForUnicast() {
+    public static UdpChannelBuilder createForUnicast() {
         return new UdpChannelBuilder();
     }
 
@@ -67,9 +67,6 @@ public abstract class IoChannelBuilder<T extends Exchangeable, Channel extends I
      */
     public B withIoType(IoType ioType) {
         Preconditions.checkNotNull(ioType);
-        Preconditions.checkState(messageListeners.isEmpty() || this.ioType.isInput(),
-                "Message listeners cannot be added for output only channels");
-
         this.ioType = ioType;
         return self();
     }
@@ -85,8 +82,6 @@ public abstract class IoChannelBuilder<T extends Exchangeable, Channel extends I
      * @return This builder
      */
     public B withMessageListener(Consumer<T> messageListener) {
-        Preconditions.checkState(ioType == null || ioType.isInput(),
-                "Message listeners cannot be added for output only channels");
         Preconditions.checkNotNull(messageListener);
         messageListeners.add(messageListener);
         return self();
@@ -96,15 +91,19 @@ public abstract class IoChannelBuilder<T extends Exchangeable, Channel extends I
      * 
      * @return The built channel
      */
-    public Channel build() {
+    public CHANNEL build() {
         Preconditions.checkState(!hasBeenBuilt, "A builder can only build a channel once");
         Preconditions.checkState(id != null, "An ID must be set prior to building");
         Preconditions.checkState(ioType != null, "an IO Type must be set prior to building");
+        Preconditions.checkState(ioType.isInput() || messageListeners.isEmpty(),
+                "Message listeners cannot be set on output only channels");
         hasBeenBuilt = true;
-        return doBuild();
+        CHANNEL channel = doBuild();
+        getMessageListeners().forEach(channel::addMessageListener);
+        return channel;
     }
 
-    protected abstract Channel doBuild();
+    protected abstract CHANNEL doBuild();
 
     @SuppressWarnings("unchecked")
     protected B self() {

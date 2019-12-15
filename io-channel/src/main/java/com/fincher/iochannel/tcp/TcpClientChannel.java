@@ -14,9 +14,7 @@ import java.util.function.Consumer;
  * @author Brian Fincher
  *
  */
-public class TcpClientChannel
-        extends
-        TcpChannel {
+public class TcpClientChannel extends TcpChannel {
 
     /** The remote address to which this client is trying to connect. */
     private final InetSocketAddress remoteAddress;
@@ -32,16 +30,10 @@ public class TcpClientChannel
      *                      will be used that the OS will choose an available port
      * @param remoteAddress The remote address to which this client is trying to connect
      */
-    private TcpClientChannel(String id, IoType ioType, StreamIo streamIo, InetSocketAddress localAddress,
+    protected TcpClientChannel(String id, IoType ioType, StreamIo streamIo, InetSocketAddress localAddress,
             InetSocketAddress remoteAddress) {
         super(id, ioType, localAddress, streamIo);
         this.remoteAddress = remoteAddress;
-    }
-
-    protected TcpClientChannel(TcpClientChannelBuilder builder) {
-        super(builder);
-        remoteAddress = builder.getRemoteAddress()
-                .orElseThrow(() -> new IllegalArgumentException("Remote address must be set"));
     }
 
     /**

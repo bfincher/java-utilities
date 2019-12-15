@@ -21,9 +21,7 @@ import org.apache.logging.log4j.Logger;
  * @author Brian Fincher
  *
  */
-public class UdpMulticastChannel
-        extends
-        UdpChannel {
+public class UdpMulticastChannel extends UdpChannel {
 
     private static final Logger LOG = LogManager.getLogger();
 
@@ -37,7 +35,7 @@ public class UdpMulticastChannel
      * @param localAddress     The local address to which this socket will be bound.
      * @param multicastAddress The multicast address to which this socket will join
      */
-    private UdpMulticastChannel(String id, InetSocketAddress localAddress, InetAddress multicastAddress) {
+    protected UdpMulticastChannel(String id, InetSocketAddress localAddress, InetAddress multicastAddress) {
         super(id, IoType.INPUT_ONLY, localAddress);
 
         Preconditions.checkArgument(localAddress != null && localAddress.getPort() != 0,
@@ -51,7 +49,7 @@ public class UdpMulticastChannel
         socketOptions = new UdpMulticastSocketOptions();
     }
 
-    private UdpMulticastChannel(String id, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
+    protected UdpMulticastChannel(String id, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         super(id, IoType.OUTPUT_ONLY, localAddress, remoteAddress);
         this.multicastAddress = remoteAddress.getAddress();
         Preconditions.checkNotNull(localAddress);
@@ -104,24 +102,6 @@ public class UdpMulticastChannel
         return new UdpMulticastChannel(id, localAddress, multicastAddress);
     }
 
-    protected static UdpMulticastChannel create(UdpMulticastChannelBuilder builder) {
-        UdpMulticastChannel channel;
-        if (builder.getIoType().isInput()) {
-            channel = createInputChannel(builder.getId(),
-                    builder.getLocalAddress().orElseThrow(() -> new IllegalStateException("Local address must be set")),
-                    builder.getMulticastAddress().orElseThrow(
-                        () -> new IllegalStateException("Multicast address must be set for input channels")));
-        } else {
-            channel = createOutputChannel(builder.getId(),
-                    builder.getLocalAddress().orElseThrow(() -> new IllegalStateException("Local address must be set")),
-                    builder.getRemoteAddress().orElseThrow(
-                        () -> new IllegalStateException("Remote address must be set for output channels")));
-        }
-
-        builder.getSocketOptions().ifPresent(options -> channel.setSocketOptions(options));
-        return channel;
-    }
-
     @Override
     public void connect() throws ChannelException, InterruptedException {
         super.connect();
@@ -131,7 +111,7 @@ public class UdpMulticastChannel
             case INPUT_AND_OUTPUT:
                 try {
                     ((MulticastSocket) socket).joinGroup(multicastAddress);
-                    LOG.info(getId() + " joined multicast group " + multicastAddress.getHostAddress());
+                    LOG.info("{} joined multicast group {}", getId(), multicastAddress.getHostAddress());
                 } catch (IOException se) {
                     throw new ChannelException(getId(), se);
                 }
@@ -153,6 +133,10 @@ public class UdpMulticastChannel
         }
 
         return super.createSocket();
+    }
+    
+    protected InetAddress getMulticastAddress() {
+        return multicastAddress;
     }
 
 }

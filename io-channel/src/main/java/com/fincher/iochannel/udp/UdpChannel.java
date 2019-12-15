@@ -26,16 +26,12 @@ import org.apache.logging.log4j.Logger;
  * @author Brian Fincher
  * 
  */
-public class UdpChannel
-        extends
-        SocketIoChannel {
+public class UdpChannel extends SocketIoChannel {
 
     private static final Logger LOG = LogManager.getLogger();
 
     /** Used by a thread to receive messages. */
-    private class ReceiveRunnable
-            implements
-            MyRunnableIfc {
+    private class ReceiveRunnable implements MyRunnableIfc {
 
         /** The byte array used to store received messages. */
         private final byte[] buf;
@@ -157,23 +153,6 @@ public class UdpChannel
         return new UdpChannel(id, IoType.OUTPUT_ONLY, localAddress, remoteAddress);
     }
 
-    protected static UdpChannel create(UdpChannelBuilder builder) {
-        UdpChannel channel;
-        if (builder.getIoType().isInput()) {
-            channel = createInputChannel(builder.getId(), builder.getLocalAddress()
-                    .orElseThrow(() -> new IllegalStateException("Local Address must be set")));
-        } else {
-
-            channel = createOutputChannel(builder.getId(),
-                    builder.getLocalAddress().orElseThrow(() -> new IllegalStateException("Local Address must be set")),
-                    builder.getRemoteAddress()
-                            .orElseThrow(() -> new IllegalStateException("Remote Address must be set")));
-        }
-
-        builder.getSocketOptions().ifPresent(options -> channel.setSocketOptions(options));
-        return channel;
-    }
-
     /**
      * Sets the UDP socket options for this socket.
      * 
@@ -217,7 +196,7 @@ public class UdpChannel
         }
         setState(ChannelState.CONNECTED);
 
-        LOG.info(getId() + " Connected to local address " + socket.getLocalAddress() + " " + socket.getLocalPort());
+        LOG.info("{} Connected to local address {} {}", getId(), socket.getLocalAddress(), socket.getLocalPort());
 
         if (remoteAddress == null) {
             LOG.info("{} Remote address = null", getId());
@@ -273,6 +252,9 @@ public class UdpChannel
         } catch (IOException ioe) {
             throw new ChannelException(getId(), ioe);
         }
-
+    }
+    
+    public UdpSocketOptions getSocketOptions() {
+        return socketOptions;
     }
 }

@@ -56,11 +56,6 @@ public abstract class IoChannel<T extends Exchangeable> implements IoChannelIfc<
             listeners = new LinkedList<>();
         }
     }
-    
-    public IoChannel(IoChannelBuilder<T, ?, ?> builder) {
-        this(builder.getId(), builder.getIoType());
-        builder.getMessageListeners().forEach(listener -> addMessageListener(listener));
-    }
 
     @Override
     public String getId() {
