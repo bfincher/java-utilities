@@ -35,8 +35,7 @@ public class UdpMulticastChannel extends UdpChannel {
      * @param localAddress     The local address to which this socket will be bound.
      * @param multicastAddress The multicast address to which this socket will join
      */
-    private UdpMulticastChannel(String id, InetSocketAddress localAddress,
-            InetAddress multicastAddress) {
+    protected UdpMulticastChannel(String id, InetSocketAddress localAddress, InetAddress multicastAddress) {
         super(id, IoType.INPUT_ONLY, localAddress);
 
         Preconditions.checkArgument(localAddress != null && localAddress.getPort() != 0,
@@ -50,8 +49,7 @@ public class UdpMulticastChannel extends UdpChannel {
         socketOptions = new UdpMulticastSocketOptions();
     }
 
-    private UdpMulticastChannel(String id, InetSocketAddress localAddress,
-            InetSocketAddress remoteAddress) {
+    protected UdpMulticastChannel(String id, InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
         super(id, IoType.OUTPUT_ONLY, localAddress, remoteAddress);
         this.multicastAddress = remoteAddress.getAddress();
         Preconditions.checkNotNull(localAddress);
@@ -71,9 +69,8 @@ public class UdpMulticastChannel extends UdpChannel {
      * @param multicastAddress The multicast address to which this socket will join
      * @return a new input only UDP MULTICAST IO Channel
      */
-    public static UdpMulticastChannel createInputChannel(String id,
-            Consumer<MessageBuffer> messageHandler, InetSocketAddress localAddress,
-            InetAddress multicastAddress) {
+    public static UdpMulticastChannel createInputChannel(String id, Consumer<MessageBuffer> messageHandler,
+            InetSocketAddress localAddress, InetAddress multicastAddress) {
         UdpMulticastChannel channel = new UdpMulticastChannel(id, localAddress, multicastAddress);
         channel.addMessageListener(messageHandler);
         return channel;
@@ -114,8 +111,7 @@ public class UdpMulticastChannel extends UdpChannel {
             case INPUT_AND_OUTPUT:
                 try {
                     ((MulticastSocket) socket).joinGroup(multicastAddress);
-                    LOG.info(getId() + " joined multicast group "
-                            + multicastAddress.getHostAddress());
+                    LOG.info("{} joined multicast group {}", getId(), multicastAddress.getHostAddress());
                 } catch (IOException se) {
                     throw new ChannelException(getId(), se);
                 }
@@ -137,6 +133,10 @@ public class UdpMulticastChannel extends UdpChannel {
         }
 
         return super.createSocket();
+    }
+    
+    protected InetAddress getMulticastAddress() {
+        return multicastAddress;
     }
 
 }

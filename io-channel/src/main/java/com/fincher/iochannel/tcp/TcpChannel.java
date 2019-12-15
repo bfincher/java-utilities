@@ -25,7 +25,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /** An IO Thread implementation of TCP sockets. */
-public abstract class TcpChannel extends SocketIoChannel {
+public abstract class TcpChannel
+        extends
+        SocketIoChannel {
 
     private static final Logger LOG = LogManager.getLogger();
 
@@ -49,10 +51,12 @@ public abstract class TcpChannel extends SocketIoChannel {
 
     private ReceiveRunnableFactory receiveRunnableFactory = new DefaultReceiveRunnableFactory();
 
-    private static final class DefaultReceiveRunnableFactory implements ReceiveRunnableFactory {
+    private static final class DefaultReceiveRunnableFactory
+            implements
+            ReceiveRunnableFactory {
         @Override
-        public MyRunnableIfc createReceiveRunnable(String id, Socket socket, StreamIo streamIo,
-                TcpChannel parent) throws ChannelException {
+        public MyRunnableIfc createReceiveRunnable(String id, Socket socket, StreamIo streamIo, TcpChannel parent)
+                throws ChannelException {
             return new ReceiveRunnable(id, socket, streamIo, parent);
         }
     }
@@ -60,18 +64,17 @@ public abstract class TcpChannel extends SocketIoChannel {
     /**
      * Constructs a new TCP socket that is capable of both sending and receiving data.
      * 
-     * @param id             The ID of this IO Thread
-     * @param ioType         Specifies the input/output status of this channel
-     * @param streamIo       Used to determine how many bytes should be read from the socket for
-     *                       each message
-     * @param localAddress   The local address to which this socket will be bound. If null
-     *                       "localhost" will be used that the OS will choose an available port
+     * @param id           The ID of this IO Thread
+     * @param ioType       Specifies the input/output status of this channel
+     * @param streamIo     Used to determine how many bytes should be read from the socket for each
+     *                     message
+     * @param localAddress The local address to which this socket will be bound. If null "localhost"
+     *                     will be used that the OS will choose an available port
      */
     protected TcpChannel(String id, IoType ioType, InetSocketAddress localAddress, StreamIo streamIo) {
         super(id, ioType, localAddress);
         this.streamIo = streamIo;
     }
-
 
     protected void setReceiveRunnableFactory(ReceiveRunnableFactory factory) {
         Preconditions.checkState(getState() == ChannelState.INITIAL,
@@ -86,20 +89,20 @@ public abstract class TcpChannel extends SocketIoChannel {
      * @param socketOptions The TCP socket options
      */
     public void setSocketOptions(TcpSocketOptions socketOptions) {
-        Preconditions.checkState(getState() == ChannelState.INITIAL,
-                "The state must be INITIAL for setSocketOptions");
+        Preconditions.checkState(getState() == ChannelState.INITIAL, "The state must be INITIAL for setSocketOptions");
 
         this.socketOptions = socketOptions;
     }
 
-    /** Connect this socket.
-     * @throws ChannelException If an error occurs while connecting
+    /**
+     * Connect this socket.
+     * 
+     * @throws ChannelException     If an error occurs while connecting
      * @throws InterruptedException if the thread is interrupted
      */
     @Override
     public final void connect() throws ChannelException, InterruptedException {
-        Preconditions.checkState(getState() == ChannelState.INITIAL,
-            "Cannot connect when state = " + getState());
+        Preconditions.checkState(getState() == ChannelState.INITIAL, "Cannot connect when state = " + getState());
 
         performConnect();
     }
@@ -124,9 +127,10 @@ public abstract class TcpChannel extends SocketIoChannel {
      */
     protected abstract MyCallableIfc<Socket> getConnectRunnable() throws ChannelException;
 
-    /** 
+    /**
      * Is this socket connected.
-     * @return true if connected 
+     * 
+     * @return true if connected
      */
     @Override
     public boolean isConnected() {
@@ -159,8 +163,7 @@ public abstract class TcpChannel extends SocketIoChannel {
         }
     }
 
-    protected final void send(MessageBuffer message, Socket channel, boolean logSend)
-            throws IOException {
+    protected final void send(MessageBuffer message, Socket channel, boolean logSend) throws IOException {
         byte[] bytes = message.getBytes();
 
         if (logSend) {
@@ -170,8 +173,7 @@ public abstract class TcpChannel extends SocketIoChannel {
         send(bytes, channel);
     }
 
-    protected final synchronized void send(byte[] msgBytes, int offset, int length, Socket channel)
-            throws IOException {
+    protected final synchronized void send(byte[] msgBytes, int offset, int length, Socket channel) throws IOException {
         OutputStream output = channel.getOutputStream();
         output.write(msgBytes, offset, length);
     }
@@ -219,8 +221,10 @@ public abstract class TcpChannel extends SocketIoChannel {
 
     /**
      * Sends a message on this channel.
-     * @param message The message to send
-     * @param channelId The ID of the channel on which to send this message.  "*" if sending to all channels
+     * 
+     * @param message   The message to send
+     * @param channelId The ID of the channel on which to send this message. "*" if sending to all
+     *                  channels
      * @throws ChannelException If an exception occurs while sending or if the channelID does not exist
      */
     public void send(MessageBuffer message, String channelId) throws ChannelException {
@@ -239,11 +243,10 @@ public abstract class TcpChannel extends SocketIoChannel {
             }
         }
     }
-    
+
     public List<String> getSocketIds() {
         return new ArrayList<>(sockets.keySet());
     }
-
 
     /**
      * Builds an ID for a socket.
@@ -282,8 +285,8 @@ public abstract class TcpChannel extends SocketIoChannel {
 
         if (getIoType().isInput()) {
             String receiveThreadId = socketId;
-            MyRunnableIfc receiveRunnable = receiveRunnableFactory
-                    .createReceiveRunnable(receiveThreadId, socket, streamIo, this);
+            MyRunnableIfc receiveRunnable = receiveRunnableFactory.createReceiveRunnable(receiveThreadId, socket,
+                    streamIo, this);
             MyThread receiveThread = new MyThread(receiveThreadId, receiveRunnable);
             receiveThreads.put(socketId, receiveThread);
             receiveThread.start();
@@ -350,7 +353,7 @@ public abstract class TcpChannel extends SocketIoChannel {
     protected void messageReceived(MessageBuffer mb, Logger logger, String logString) {
         super.messageReceived(mb, logger, logString);
     }
-    
+
     protected TcpSocketOptions getSocketOptions() {
         return socketOptions;
     }

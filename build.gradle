@@ -82,4 +82,11 @@ allprojects {
             property "sonar.projectKey", "bfincher_java-utilities"
         }
     }
+
+    jacocoTestReport {
+        reports {
+            html.enabled = true
+            html.destination file("${buildDir}/reports/jacoco")
+        }
+    }
 }
